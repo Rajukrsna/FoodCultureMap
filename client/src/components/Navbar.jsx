@@ -11,12 +11,15 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 const Navbar = () => {
   return (
-    <AppBar position="static" sx={{ backgroundColor: "#002D72" }}>
+    <AppBar position="static" sx={{
+  background: "linear-gradient(90deg,#2a5298  0%, #1e3c72 100%)"
+}}
+>
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
         {/* Logo Section */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <img
-            src="/logo.svg" // Replace with your logo path
+            src="/logo2.png" // Replace with your logo path
             alt="Logo"
             style={{ height: 40 }}
           />
