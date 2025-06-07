@@ -1,41 +1,40 @@
-import React, { useState } from 'react';
-import { TextField, Button, Container, Typography, List, ListItem } from '@mui/material';
-import axios from 'axios';
-
-import useEmbeddings from './hooks/useEmbeddings'; 
-function HomePage() {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
-  const [answer, setAnswer] = useState('');
-  const embedQuery = useEmbeddings();
-
-  const handleSearch = async () => {
-    const embedding = await embedQuery(query);
-
-    const response = await axios.post('http://localhost:5000/api/rag/ask', {
-      queryEmbedding: embedding,
-      originalQuery: query
-    });
-
-    setResults(response.data.similar || []);
-    setAnswer(response.data.answer);
-  };
+import React, { useState } from "react";
+import { MapContainer, TileLayer } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import ChatIcon from "@mui/icons-material/Chat";
+import ChatbotPanel from "./chatBotPanel.jsx"
+import { Fab }  from "@mui/material";
+import Navbar from "./Navbar.jsx"
+const MapWithChatbot = () => {
+  const [chatOpen, setChatOpen] = useState(false);
 
   return (
-    <Container>
-      <Typography variant="h4">Food & Culture Explorer 🌍</Typography>
-      <TextField fullWidth value={query} onChange={(e) => setQuery(e.target.value)} label="Ask anything..." />
-      <Button variant="contained" onClick={handleSearch}>Search</Button>
+    <div style={{ height: "100vh", width: "100vw", position: "relative" }}>
+      <Navbar/>
+      <MapContainer
+        center={[20.5937, 78.9629]} // Center on India
+        zoom={4}
+        scrollWheelZoom={true}
+        style={{ height: "100%", width: "100%" }}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+      </MapContainer>
 
-      <Typography variant="h6" sx={{ mt: 3 }}>AI Answer:</Typography>
-      <Typography>{answer}</Typography>
+      {/* Chatbot Floating Action Button */}
+      <Fab
+        color="primary"
+        onClick={() => setChatOpen(true)}
+        sx={{ position: "absolute", bottom: 16, right: 16 }}
+      >
+        <ChatIcon />
+      </Fab>
 
-      <Typography variant="h6" sx={{ mt: 3 }}>Related Dishes:</Typography>
-      <List>
-        {results.map((r, i) => <ListItem key={i}>{r.name}</ListItem>)}
-      </List>
-    </Container>
+      {/* Chatbot Dialog */}
+   <ChatbotPanel open={chatOpen} onClose={() => setChatOpen(false)} />    </div>
   );
-}
+};
 
-export default HomePage;
+export default MapWithChatbot;
