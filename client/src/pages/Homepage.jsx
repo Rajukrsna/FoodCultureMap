@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import ChatIcon from "@mui/icons-material/Chat";
-import ChatbotPanel from "./chatBotPanel.jsx"
+import ChatbotPanel from "../components/chatBotPanel.jsx"
 import { Fab }  from "@mui/material";
-import Navbar from "./Navbar.jsx"
+import Navbar from "../components/Navbar.jsx"
 const MapWithChatbot = () => {
   const [chatOpen, setChatOpen] = useState(false);
 
