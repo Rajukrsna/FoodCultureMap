@@ -4,10 +4,12 @@ import Login from './pages/Login';
 import Register from './pages/RegistrationForm';
 import PrivateRoute from './components/PrivateRoute'; // Adjust the path as needed
 import ViewStoryPage from './pages/ViewStoryPage';
+import MobileWarningOverlay from './components/MobileWarningOverlay'; // ✅ Import here
 
 function App() {
   return (
     <Router>
+      <MobileWarningOverlay />
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />

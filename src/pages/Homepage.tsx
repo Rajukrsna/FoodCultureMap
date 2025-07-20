@@ -1,4 +1,4 @@
-import  { useState } from 'react';
+import  { useState , useEffect} from 'react';
 import MapComponent from '../components/MapComponent';
 import ChatBot from '../components/ChatBot';
 import { FoodCultureDoc, ChatMessage, StoryStep, StorySegment } from '../types/FoodCulture';
@@ -8,6 +8,7 @@ import { Globe, MessageCircle, LogOut,Sparkles } from 'lucide-react';
 import useEmbeddings from "../hooks/useEmbeddings";
 import FoodCard from '../components/FoodCard'
 import { useNavigate } from 'react-router-dom';
+import { X ,Menu} from 'lucide-react'; // ✅ Import close icon
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function Homepage() {
@@ -47,10 +48,12 @@ const stopSpeaking = () => {
   const [isStoryMode, setIsStoryMode] = useState(false);
   const [currentStoryStep, setCurrentStoryStep] = useState(0);
   const [storySteps, setStorySteps] = useState<StoryStep[]>([]);
-  //const [ docs, setDocs] = useState<FoodCultureDoc[]|null>([])
   const [selectedFood, setSelectedFood] = useState<FoodCultureDoc | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([20, 0]);
   const [mapZoom, setMapZoom] = useState(2);
+  const [isMobile, setIsMobile] = useState(false);
+  const [showMobileChat, setShowMobileChat] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleChatMessage = async (message: string) => {
     // Add user message
@@ -224,6 +227,13 @@ const handleViewStory = () => {
   navigate('/viewStory', { state: { story: storySteps } }); // Pass the storySteps
 };
 
+useEffect(() => {
+  const checkMobile = () => setIsMobile(window.innerWidth < 768);
+  checkMobile();
+  window.addEventListener("resize", checkMobile);
+  return () => window.removeEventListener("resize", checkMobile);
+}, []);
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
@@ -231,24 +241,23 @@ const handleViewStory = () => {
   <motion.header 
   initial={{ opacity: 0, y: -20 }}
   animate={{ opacity: 1, y: 0 }}
-  className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-orange-200/50 px-6 py-4"
+  className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-orange-200/50 px-4 sm:px-6 py-4"
 >
   <div className="max-w-7xl mx-auto flex items-center justify-between">
     
     {/* Logo and Title */}
     <div className="flex items-center space-x-3">
-      <div className="w-10 h-10 bg-gradient-to-br  rounded-full flex items-center justify-center">
-        <img src="/logo2.png"></img>
-        
+      <div className="w-10 h-10 bg-gradient-to-br rounded-full flex items-center justify-center">
+        <img src="/logo2.png" className="w-8 h-8" />
       </div>
-      <div>
+      <div className="hidden sm:block">
         <h1 className="text-2xl font-bold text-gray-800">Food Culture Explorer</h1>
         <p className="text-sm text-gray-600">Discover the world through mapping Food-Culture</p>
       </div>
     </div>
 
-    {/* Right-side Nav Items */}
-    <div className="flex items-center space-x-4">
+    {/* Desktop Nav Items */}
+    <div className="hidden sm:flex items-center space-x-4">
       <div className="flex items-center space-x-1 text-sm text-gray-600">
         <Sparkles className="w-4 h-4" />
         <span>AI-Powered Cultural Journey</span>
@@ -268,8 +277,43 @@ const handleViewStory = () => {
         <span>Logout</span>
       </div>
     </div>
+
+    {/* Mobile Menu Toggle Button */}
+    <div className="sm:hidden">
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="text-gray-700 hover:text-orange-600 transition"
+      >
+        {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
+    </div>
   </div>
+
+  {/* Mobile Menu */}
+  {isMobileMenuOpen && (
+    <div className="sm:hidden mt-4 space-y-2 px-4">
+      <div className="flex items-center space-x-1 text-sm text-gray-700">
+        <Sparkles className="w-4 h-4" />
+        <span>AI-Powered Cultural Journey</span>
+      </div>
+      <div 
+        onClick={handleViewStory}
+        className="flex items-center space-x-1 text-sm text-gray-700 hover:text-orange-600 cursor-pointer"
+      >
+        <Globe className="w-4 h-4" />
+        <span>View Story</span>
+      </div>
+      <div 
+        onClick={handleLogout}
+        className="flex items-center space-x-1 text-sm text-gray-700 hover:text-orange-600 cursor-pointer"
+      >
+        <LogOut className="w-4 h-4" />
+        <span>Logout</span>
+      </div>
+    </div>
+  )}
 </motion.header>
+
 
 
       {/* Main Content */}
@@ -318,6 +362,7 @@ const handleViewStory = () => {
           </motion.div>
 
           {/* Chat Section */}
+          {!isMobile && (
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -349,6 +394,7 @@ const handleViewStory = () => {
          
 
           </motion.div>
+          )}
         </div>
 
         {/* Selected Food Card */}
@@ -377,8 +423,52 @@ const handleViewStory = () => {
         🔇 Stop Narration
       </button>
     )}
-
+{isMobile && !showMobileChat && (
+  <button
+    onClick={() => setShowMobileChat(true)}
+    className="fixed bottom-4 right-4 z-50 bg-gradient-to-r from-orange-500 to-red-500 text-white p-3 rounded-full shadow-lg hover:scale-105 transition"
+  >
+    <MessageCircle className="w-5 h-5" />
+  </button>
+)}
+{isMobile && showMobileChat && (
+  <div className="fixed inset-0 bg-white z-[100] flex flex-col">
+    {/* Header */}
+    <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-orange-500 to-red-500 text-white">
+      <div className="flex items-center space-x-2">
+        <MessageCircle className="w-5 h-5" />
+        <h2 className="font-semibold text-base">Ask KalFu Bot</h2>
+      </div>
+      <button
+        onClick={() => setShowMobileChat(false)}
+        className="p-1 hover:bg-white/10 rounded"
+      >
+        <X className="w-5 h-5 text-white" />
+      </button>
     </div>
+
+    {/* Chat */}
+    <div className="flex-1 overflow-hidden">
+      <ChatBot
+        messages={messages}
+        onSendMessage={handleChatMessage}
+        isProcessing={isStoryMode}
+      />
+    </div>
+
+    {/* Optional View Story CTA */}
+    {storySteps.length > 0 && !isStoryMode && (
+      <button
+        onClick={handleViewStory}
+        className="mx-4 my-2 bg-gradient-to-r from-orange-400 to-red-400 text-white px-4 py-2 rounded-lg hover:brightness-110 transition"
+      >
+        📖 View Generated Story
+      </button>
+    )}
+  </div>
+)}
+    </div>
+    
   );
 }
 
